@@ -50,6 +50,14 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
  * Authorization required: none
  */
 
+//TODO:delete when done
+// if req.query.nameLike or minEmployees or maxEmployees
+//    findFiltered() -> Company static method
+//    return result
+
+// if minEmployees > maxEmployees throw Error
+
+
 router.get("/", async function (req, res, next) {
   const companies = await Company.findAll();
   return res.json({ companies });
