@@ -111,6 +111,11 @@ class Company {
           numEmployees: "num_employees",
           logoUrl: "logo_url",
         });
+
+    console.log("****************")' '
+    console.log("setCols: ", setCols);
+    console.log("values: ", values);
+
     const handleVarIdx = "$" + (values.length + 1);
 
     const querySql = `
