@@ -115,7 +115,7 @@ describe("get", function () {
 
 describe("findFiltered", function () {
   test("works: filter with nameLike", async function () {
-    let companies = await Company.findFiltered({nameLike: "c1"});
+    let companies = await Company.findAll({nameLike: "c1"});
     expect(companies).toEqual([
       {
         handle: "c1",
@@ -128,7 +128,7 @@ describe("findFiltered", function () {
   });
 
   test("works: filter with minEmployees", async function () {
-    let companies = await Company.findFiltered({minEmployees: 3});
+    let companies = await Company.findAll({minEmployees: 3});
     expect(companies).toEqual([
       {
         handle: "c3",
@@ -141,7 +141,7 @@ describe("findFiltered", function () {
   });
 
   test("works: filter with maxEmployees", async function () {
-    let companies = await Company.findFiltered({maxEmployees: 1});
+    let companies = await Company.findAll({maxEmployees: 1});
     expect(companies).toEqual([
       {
         handle: "c1",
@@ -154,9 +154,9 @@ describe("findFiltered", function () {
   });
 
   test("works: filter with min & maxEmployees", async function () {
-    let companies = await Company.findFiltered({
-        mixEmployees: 1,
-        maxEmployees: 3 });
+    let companies = await Company.findAll({
+        minEmployees: 1,
+        maxEmployees: 2 });
     expect(companies).toEqual([
       {
         handle: "c1",
@@ -178,7 +178,7 @@ describe("findFiltered", function () {
   test("doesnt work: not found", async function () {
 
     try {
-      await Company.findFiltered({minEmployees: 10});
+      await Company.findAll({minEmployees: 10});
       throw new Error("fail test, you shouldn't get here");
     } catch (err) {
       expect(err instanceof NotFoundError).toBeTruthy();

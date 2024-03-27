@@ -56,10 +56,13 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
 //    return result
 
 // if minEmployees > maxEmployees throw Error
-
-
 router.get("/", async function (req, res, next) {
-  const companies = await Company.findAll();
+  if (req.query === "undefined") {
+    const companies = await Company.findAll();
+  } else {
+    const companies = await Company.findFiltered(req.query);
+  }
+
   return res.json({ companies });
 });
 

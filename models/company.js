@@ -1,5 +1,6 @@
 "use strict";
 
+const { set } = require("../app");
 const db = require("../db");
 const { BadRequestError, NotFoundError } = require("../expressError");
 const { sqlForPartialUpdate } = require("../helpers/sql");
@@ -55,7 +56,19 @@ class Company {
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
 
-  static async findAll() {
+  static async findAll(filters={}) {
+
+    const { whereParams, values} = this.sqlForGetCompanyFilter(filters);
+    let where = "WHERE";
+
+    if (Object.keys(filters).length === 0) {
+      where = "";
+    }
+
+    console.log("filters", filters);
+    console.log("whereParams", whereParams);
+    console.log("values", values);
+
     const companiesRes = await db.query(`
         SELECT handle,
                name,
@@ -63,9 +76,37 @@ class Company {
                num_employees AS "numEmployees",
                logo_url      AS "logoUrl"
         FROM companies
-        ORDER BY name`);
+        ${where} ${whereParams}
+        ORDER BY name`, [...values]);
+
+    if (!companiesRes.rows[0]) throw new NotFoundError("No companies found.");
     return companiesRes.rows;
   }
+
+  static sqlForGetCompanyFilter(filterParams={}) {
+
+    let filters = [];
+    let idx = 0;
+
+    for (let param in filterParams) {
+      if (param === "nameLike") {
+        filters.push(`"name" ILIKE $${idx + 1}`);
+      }
+      else if (param === "minEmployees") {
+        filters.push(`"num_employees" >= $${idx + 1}`);
+      }
+      else if (param === "maxEmployees") {
+        filters.push(`"num_employees" <= $${idx + 1}`);
+      }
+      idx++;
+    }
+
+    return {
+      whereParams: filters.join(" AND "),
+      values: Object.values(filterParams),
+    };
+  }
+
 
   /** Given a company handle, return data about company.
    *
