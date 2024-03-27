@@ -111,6 +111,82 @@ describe("get", function () {
   });
 });
 
+/************************************** findFiltered */
+
+describe("findFiltered", function () {
+  test("works: filter with nameLike", async function () {
+    let companies = await Company.findFiltered({nameLike: "c1"});
+    expect(companies).toEqual([
+      {
+        handle: "c1",
+        name: "C1",
+        description: "Desc1",
+        numEmployees: 1,
+        logoUrl: "http://c1.img",
+      }
+    ]);
+  });
+
+  test("works: filter with minEmployees", async function () {
+    let companies = await Company.findFiltered({minEmployees: 3});
+    expect(companies).toEqual([
+      {
+        handle: "c3",
+        name: "C3",
+        description: "Desc3",
+        numEmployees: 3,
+        logoUrl: "http://c3.img",
+      }
+    ]);
+  });
+
+  test("works: filter with maxEmployees", async function () {
+    let companies = await Company.findFiltered({maxEmployees: 1});
+    expect(companies).toEqual([
+      {
+        handle: "c1",
+        name: "C1",
+        description: "Desc1",
+        numEmployees: 1,
+        logoUrl: "http://c1.img",
+      }
+    ]);
+  });
+
+  test("works: filter with min & maxEmployees", async function () {
+    let companies = await Company.findFiltered({
+        mixEmployees: 1,
+        maxEmployees: 3 });
+    expect(companies).toEqual([
+      {
+        handle: "c1",
+        name: "C1",
+        description: "Desc1",
+        numEmployees: 1,
+        logoUrl: "http://c1.img",
+      },
+      {
+        handle: "c2",
+        name: "C2",
+        description: "Desc2",
+        numEmployees: 2,
+        logoUrl: "http://c2.img",
+      }
+    ]);
+  });
+
+  test("doesnt work: not found", async function () {
+
+    try {
+      await Company.findFiltered({minEmployees: 10});
+      throw new Error("fail test, you shouldn't get here");
+    } catch (err) {
+      expect(err instanceof NotFoundError).toBeTruthy();
+    }
+
+  });
+});
+
 /************************************** update */
 
 describe("update", function () {
