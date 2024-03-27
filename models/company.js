@@ -65,7 +65,6 @@ class Company {
       where = "";
     }
 
-    console.log("filters", filters);
     console.log("whereParams", whereParams);
     console.log("values", values);
 

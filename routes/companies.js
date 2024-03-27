@@ -28,7 +28,7 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
   const validator = jsonschema.validate(
     req.body,
     companyNewSchema,
-    {required: true}
+    { required: true }
   );
   if (!validator.valid) {
     const errs = validator.errors.map(e => e.stack);
@@ -50,19 +50,14 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
  * Authorization required: none
  */
 
-//TODO:delete when done
-// if req.query.nameLike or minEmployees or maxEmployees
-//    findFiltered() -> Company static method
-//    return result
-
-// if minEmployees > maxEmployees throw Error
 router.get("/", async function (req, res, next) {
-  if (req.query === "undefined") {
-    const companies = await Company.findAll();
-  } else {
-    const companies = await Company.findFiltered(req.query);
-  }
+  console.log("req.query.minEmployees", req.query.minEmployees)
 
+
+  if (Number(req.query.minEmployees) > Number(req.query.maxEmployees))
+    throw new BadRequestError();
+
+  const companies = await Company.findAll(req.query);
   return res.json({ companies });
 });
 
@@ -94,7 +89,7 @@ router.patch("/:handle", ensureLoggedIn, async function (req, res, next) {
   const validator = jsonschema.validate(
     req.body,
     companyUpdateSchema,
-    {required:true}
+    { required: true }
   );
   if (!validator.valid) {
     const errs = validator.errors.map(e => e.stack);
