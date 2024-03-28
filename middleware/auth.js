@@ -50,11 +50,18 @@ function isAdmin(req, res, next) {
   throw new UnauthorizedError("Must be an admin! ");
 }
 
+/** Middleware to use when only admin can access
+ * or specific user (not just logged in user)
+ *
+ * If not, raises Unauthorized.
+*/
+
 function ensureAuthToAccessUser(req, res, next) {
-  if (res.locals.user?.username === req.params.username ||
+  if (res.locals.user?.username === req.params?.username ||
     res.locals.user?.isAdmin === true) {
       return next();
     }
+
   throw new UnauthorizedError("Can only access your own user account!");
 }
 
