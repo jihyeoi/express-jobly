@@ -63,6 +63,17 @@ describe("POST /companies", function () {
       .set("authorization", `Bearer ${u1Token}`);
     expect(resp.statusCode).toEqual(400);
   });
+
+  test("ok for users", async function () {
+    const resp = await request(app)
+      .post("/companies")
+      .send(newCompany)
+      .set("authorization", `Bearer ${uAdminToken}`);
+    expect(resp.statusCode).toEqual(201);
+    expect(resp.body).toEqual({
+      company: newCompany,
+    });
+  });
 });
 
 /************************************** GET /companies */
@@ -184,14 +195,14 @@ describe("GET /companies", function () {
   });
 
   test("no search results yields empty array", async function () {
-    const resp = await request(app).get("/companies/?nameLike=poppyseed")
-    expect(resp).toEqual([]);
+    const resp = await request(app).get("/companies/?nameLike=poppyseed");
+    expect(resp.body).toEqual({ companies: [] });
   });
 
   test("not ok for query parameter 'apple = 1'", async function () {
     const resp = await request(app).get("/companies/?apple=1");
-    expect(resp).toEqual(400);
-  })
+    expect(resp.statusCode).toEqual(400);
+  });
 
 });
 

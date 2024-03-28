@@ -216,14 +216,27 @@ describe("_sqlForGetCompanyFilter", function () {
   });
 
   test("no data", function () {
-    const filterParams = {}
-
-    const result = Company._sqlForGetCompanyFilter(filterParams);
+    const result = Company._sqlForGetCompanyFilter();
 
     expect(result).toEqual({
       "values": [],
       "whereParams": ""
     });
+  });
+
+  test("works: max employees included", function () {
+    const filterParams = {
+      "maxEmployees": 2
+    }
+
+    const result = Company._sqlForGetCompanyFilter(filterParams);
+
+    expect(result).toEqual(
+      {
+        "whereParams": `WHERE "num_employees" <= $1`,
+        "values": [2]
+      }
+    );
   });
 });
 
