@@ -38,7 +38,7 @@ describe("POST /users", function () {
       .set("authorization", `Bearer ${u1Token}`);
     expect(resp.statusCode).toEqual(401);
   });
-
+//TODO: works for admin
   test("works for users: create non-admin", async function () {
     const resp = await request(app)
       .post("/users")
@@ -62,7 +62,7 @@ describe("POST /users", function () {
       }, token: expect.any(String),
     });
   });
-
+//TODO: change name: unauth
   test("works for users: create admin", async function () {
     const resp = await request(app)
       .post("/users")
@@ -417,3 +417,5 @@ describe("DELETE /users/:username", function () {
     expect(resp.statusCode).toEqual(404);
   });
 });
+
+//TODO: if non logged in looking for nonexistent data, gettting 401

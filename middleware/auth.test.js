@@ -60,14 +60,14 @@ describe("ensureLoggedIn", function () {
     const req = {};
     const res = { locals: {} };
     expect(() => ensureLoggedIn(req, res, next))
-        .toThrow(UnauthorizedError);
+      .toThrow(UnauthorizedError);
   });
 
   test("unauth if no valid login", function () {
     const req = {};
-    const res = { locals: { user: { } } };
+    const res = { locals: { user: {} } };
     expect(() => ensureLoggedIn(req, res, next))
-        .toThrow(UnauthorizedError);
+      .toThrow(UnauthorizedError);
   });
 });
 
@@ -83,14 +83,14 @@ describe("isAdmin", function () {
     const req = {};
     const res = { locals: {} };
     expect(() => isAdmin(req, res, next))
-    .toThrow(UnauthorizedError);
+      .toThrow(UnauthorizedError);
   });
 
   test("unauth if not admin", function () {
     const req = {};
-    const res = { locals: { user: { isAdmin: false }} };
+    const res = { locals: { user: { isAdmin: false } } };
     expect(() => isAdmin(req, res, next))
-        .toThrow(UnauthorizedError);
+      .toThrow(UnauthorizedError);
   });
 });
 
@@ -103,25 +103,21 @@ describe("ensureAuthToAccessUser", function () {
   });
 
   test("works if user", function () {
-    const req = { params: { username: "test" }  };
+    const req = { params: { username: "test" } };
     const res = { locals: { user: { username: "test" } } };
     ensureAuthToAccessUser(req, res, next);
   });
 
   test("not logged in", function () {
-    const req = {};
+    const req = { params: { username: "test" } };
     const res = { locals: {} };
-
-    console.log("USERNAME ", res.locals?.username)
-    console.log("PARAMS ", req.params?.username)
-
     expect(() => ensureAuthToAccessUser(req, res, next))
-    .toThrow(UnauthorizedError);
+      .toThrow(UnauthorizedError);
   });
 
   test("unauth if not logged in user", function () {
-    const req = { params: { username: "test" }};
-    const res = { locals: { user: { username: "bob" } }};
+    const req = { params: { username: "test" } };
+    const res = { locals: { user: { username: "bob" } } };
     expect(() => ensureAuthToAccessUser(req, res, next))
       .toThrow(UnauthorizedError);
   });

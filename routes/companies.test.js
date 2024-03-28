@@ -50,7 +50,7 @@ describe("POST /companies", function () {
       company: newCompany,
     });
   });
-
+//TODO: always describe level of user
   test("bad request with missing data", async function () {
     const resp = await request(app)
       .post("/companies")
@@ -259,7 +259,7 @@ describe("PATCH /companies/:handle", function () {
       },
     });
   });
-
+//TODO: more descriptive than doesn't work
   test("doens't work if non-admin", async function () {
     const resp = await request(app)
       .patch(`/companies/c1`)
@@ -278,7 +278,7 @@ describe("PATCH /companies/:handle", function () {
       });
     expect(resp.statusCode).toEqual(401);
   });
-
+//TODO: unauth for anon no such company
   test("not found on no such company", async function () {
     const resp = await request(app)
       .patch(`/companies/nope`)
@@ -313,7 +313,7 @@ describe("PATCH /companies/:handle", function () {
 /************************************** DELETE /companies/:handle */
 
 describe("DELETE /companies/:handle", function () {
-  test("works for users", async function () {
+  test("works for admin", async function () {
     const resp = await request(app)
       .delete(`/companies/c1`)
       .set("authorization", `Bearer ${uAdminToken}`);

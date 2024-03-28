@@ -44,7 +44,9 @@ function ensureLoggedIn(req, res, next) {
  *
  * If not, raises Unauthorized.
  */
-
+//TODO: be less helpful with error messages
+//TODO: check for logged in user as well
+//TODO: ensureAdmin for consistency
 function isAdmin(req, res, next) {
   if (res.locals.user?.isAdmin === true) return next();
   throw new UnauthorizedError("Must be an admin! ");
@@ -56,6 +58,9 @@ function isAdmin(req, res, next) {
  * If not, raises Unauthorized.
 */
 
+//TODO: handle empty url param
+//TODO: change name to be more descriptive
+//TODO: again less helpful errors
 function ensureAuthToAccessUser(req, res, next) {
   if (res.locals.user?.username === req.params?.username ||
     res.locals.user?.isAdmin === true) {
