@@ -183,16 +183,18 @@ describe("GET /companies", function () {
     expect(resp.statusCode).toEqual(400);
   });
 
-  // test("empty array", async function () {
-  //   const query = JSON.stringify({nameLike: "poppyseed"});
-  //   const resp = await request(app).get("/companies").query(query)
-  //   expect(resp).toEqual([]);
-  // });
+  test("no search results yields empty array", async function () {
+    const resp = await request(app).get("/companies/?nameLike=poppyseed")
+    expect(resp).toEqual([]);
+  });
+
+  test("not ok for query parameter 'apple = 1'", async function () {
+    const resp = await request(app).get("/companies/?apple=1");
+    expect(resp).toEqual(400);
+  })
 
 });
-//TODO: figure out .query, also looks like schema is bad.
-//TODO: additional invalid parameter
-//TODO: .get("/companies").query({ minEmployees: "value",...})
+
 /************************************** GET /companies/:handle */
 
 describe("GET /companies/:handle", function () {
