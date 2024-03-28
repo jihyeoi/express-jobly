@@ -50,8 +50,17 @@ function isAdmin(req, res, next) {
   throw new UnauthorizedError("Must be an admin! ");
 }
 
+function ensureAuthToAccessUser(req, res, next) {
+  if (res.locals.user?.username === req.params.username ||
+    res.locals.user?.isAdmin === true) {
+      return next();
+    }
+  throw new UnauthorizedError("Can only access your own user account!");
+}
+
 module.exports = {
   authenticateJWT,
   ensureLoggedIn,
-  isAdmin
+  isAdmin,
+  ensureAuthToAccessUser
 };
