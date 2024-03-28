@@ -11,6 +11,7 @@ const Company = require("../models/company");
 
 const companyNewSchema = require("../schemas/companyNew.json");
 const companyUpdateSchema = require("../schemas/companyUpdate.json");
+const companyFiltersSchema = require("../schemas/companyNew.json");
 
 const router = new express.Router();
 
@@ -49,16 +50,20 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
  *
  * Authorization required: none
  */
-//TODO: more specific error messages
-//TODO: use schema validation
-router.get("/", async function (req, res, next) {
-  if (Number(req.query.minEmployees) > Number(req.query.maxEmployees))
-    throw new BadRequestError("Invalid filter.");
 
-  for (const param in req.query) {
-    if (!(["minEmployees", "maxEmployees", "nameLike"].includes(param)))
-      throw new BadRequestError("Invalid filter.");
+router.get("/", async function (req, res, next) {
+  const validator = jsonschema.validate(
+    req.body,
+    companyFiltersSchema,
+    { required: true }
+  );
+  if (!validator.valid) {
+    const errs = validator.errors.map(e => e.stack);
+    throw new BadRequestError(errs);
   }
+
+  if (Number(req.query.minEmployees) > Number(req.query.maxEmployees))
+    throw new BadRequestError("min employees cannot be greater than max employees!");
 
   const companies = await Company.findAll(req.query);
   return res.json({ companies });

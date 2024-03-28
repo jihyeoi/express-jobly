@@ -99,18 +99,18 @@ describe("GET /companies", function () {
   });
 
   test("ok for nameLike filter", async function () {
-    const resp = await request(app).get("/companies/?nameLike=c1");
-    expect(resp.statusCode).toEqual(200);
-    expect(resp.body).toEqual({
-      companies:
+  const resp = await request(app).get("/companies/?nameLike=c1");
+  expect(resp.statusCode).toEqual(200);
+  expect(resp.body).toEqual({
+  companies:
         [
           {
             handle: "c1",
             name: "C1",
             description: "Desc1",
-            numEmployees: 1,
-            logoUrl: "http://c1.img",
-          }
+  numEmployees: 1,
+  logoUrl: "http://c1.img",
+  }
         ]
     });
   });
@@ -149,6 +149,11 @@ describe("GET /companies", function () {
     });
   });
 
+  test("fail for non-integer numEmployees", async function () {
+    const resp = await request(app).get("/companies/?minEmployees=3.5");
+    expect(resp.statusCode).toEqual(400);
+  });
+
   test("ok for minEmloyees & maxEmployees filter", async function () {
     const resp = await request(app).get("/companies/?minEmployees=1&maxEmployees=2");
     expect(resp.statusCode).toEqual(200);
@@ -177,14 +182,13 @@ describe("GET /companies", function () {
     const resp = await request(app).get("/companies/?minEmployees=2&maxEmployees=1");
     expect(resp.statusCode).toEqual(400);
   });
-//TODO: refactor when returning empty array
-  test("not found", async function () {
-    const resp = await request(app).get("/companies/?nameLike=poppyseed");
-    expect(resp.statusCode).toEqual(404);
+
+  test("empty array", async function () {
+    const resp = await request(app).get("/companies").query({nameLike:poppyseed});
+    expect(resp).toEqual([]);
   });
 });
 
-//TODO: min and max non integer
 //TODO: additional invalid parameter
 //TODO: .get("/companies").query({ minEmployees: "value",...})
 /************************************** GET /companies/:handle */

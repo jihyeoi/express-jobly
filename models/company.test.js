@@ -31,7 +31,7 @@ describe("create", function () {
     expect(company).toEqual(newCompany);
 
     const result = await db.query(
-          `SELECT handle, name, description, num_employees, logo_url
+      `SELECT handle, name, description, num_employees, logo_url
            FROM companies
            WHERE handle = 'new'`);
     expect(result.rows).toEqual([
@@ -115,7 +115,7 @@ describe("get", function () {
 
 describe("findFiltered", function () {
   test("works: filter with nameLike", async function () {
-    let companies = await Company.findAll({nameLike: "c1"});
+let companies = await Company.findAll({nameLike: "c1"});
     expect(companies).toEqual([
       {
         handle: "c1",
@@ -128,7 +128,7 @@ describe("findFiltered", function () {
   });
 
   test("works: filter with minEmployees", async function () {
-    let companies = await Company.findAll({minEmployees: 3});
+let companies = await Company.findAll({minEmployees: 3});
     expect(companies).toEqual([
       {
         handle: "c3",
@@ -141,7 +141,7 @@ describe("findFiltered", function () {
   });
 
   test("works: filter with maxEmployees", async function () {
-    let companies = await Company.findAll({maxEmployees: 1});
+let companies = await Company.findAll({maxEmployees: 1});
     expect(companies).toEqual([
       {
         handle: "c1",
@@ -153,8 +153,8 @@ describe("findFiltered", function () {
     ]);
   });
 
-  test("works: filter with min & maxEmployees", async function () {
-    let companies = await Company.findAll({
+test("works: filter with min & maxEmployees", async function () {
+  let companies = await Company.findAll({
         minEmployees: 1,
         maxEmployees: 2 });
     expect(companies).toEqual([
@@ -175,19 +175,59 @@ describe("findFiltered", function () {
     ]);
   });
 
-  test("doesnt work: not found", async function () {
-//TODO: refactor to empty array
-    try {
-      await Company.findAll({minEmployees: 10});
-      throw new Error("fail test, you shouldn't get here");
-    } catch (err) {
-      expect(err instanceof NotFoundError).toBeTruthy();
-    }
-
+test("no results", async function () {
+    const result = await Company.findAll({minEmployees: 10});
+    expect(result).toEqual([]);
   });
 });
 
-//TODO: unit tests for sql builder
+/************************************** sql builder */
+
+describe("_sqlForGetCompanyFilter", function () {
+  test("works: nameLike included", function () {
+    const filterParams = {
+      "nameLike": "c1",
+    }
+
+    const result = Company._sqlForGetCompanyFilter(filterParams);
+
+    expect(result).toEqual(
+      {
+        whereParams: `WHERE "name" ILIKE $1`,
+        values: ["%c1%"]
+      }
+    );
+  });
+
+  test("works: min & max employees included", function () {
+    const filterParams = {
+      "minEmployees": 1,
+      "maxEmployees": 2
+    }
+
+    const result = Company._sqlForGetCompanyFilter(filterParams);
+
+    expect(result).toEqual(
+      {
+        "whereParams": `WHERE "num_employees" >= $1 AND "num_employees" <= $2`,
+        "values": [1, 2]
+      }
+    );
+  });
+
+  test("no data", function () {
+    const filterParams = {}
+
+    const result = Company._sqlForGetCompanyFilter(filterParams);
+
+    expect(result).toEqual({
+      "values": [],
+      "whereParams": ""
+    });
+  });
+});
+
+
 /************************************** update */
 
 describe("update", function () {
@@ -206,7 +246,7 @@ describe("update", function () {
     });
 
     const result = await db.query(
-          `SELECT handle, name, description, num_employees, logo_url
+      `SELECT handle, name, description, num_employees, logo_url
            FROM companies
            WHERE handle = 'c1'`);
     expect(result.rows).toEqual([{
@@ -233,7 +273,7 @@ describe("update", function () {
     });
 
     const result = await db.query(
-          `SELECT handle, name, description, num_employees, logo_url
+      `SELECT handle, name, description, num_employees, logo_url
            FROM companies
            WHERE handle = 'c1'`);
     expect(result.rows).toEqual([{
@@ -270,7 +310,7 @@ describe("remove", function () {
   test("works", async function () {
     await Company.remove("c1");
     const res = await db.query(
-        "SELECT handle FROM companies WHERE handle='c1'");
+      "SELECT handle FROM companies WHERE handle='c1'");
     expect(res.rows.length).toEqual(0);
   });
 

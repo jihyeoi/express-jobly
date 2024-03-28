@@ -63,12 +63,7 @@ class Company {
 
   static async findAll(filters = {}) {
 
-    const { whereParams, values } = this.sqlForGetCompanyFilter(filters);
-    let where = "WHERE";
-
-    if (Object.keys(filters).length === 0) {
-      where = "";
-    }
+    const { whereParams, values } = this._sqlForGetCompanyFilter(filters);
 
     const companiesRes = await db.query(`
         SELECT handle,
@@ -77,10 +72,9 @@ class Company {
                num_employees AS "numEmployees",
                logo_url      AS "logoUrl"
         FROM companies
-        ${where} ${whereParams}
+        ${whereParams}
         ORDER BY name`, [...values]);
-//TODO: not an error, just empty array
-    if (!companiesRes.rows[0]) throw new NotFoundError("No companies found.");
+
     return companiesRes.rows;
   }
 
@@ -99,31 +93,34 @@ class Company {
    *    values: [value1, value2, ]
    * }
    */
-//TODO: add underscore to name
-//TODO: add WHERE logic in this function
-  static sqlForGetCompanyFilter(filterParams = {}) {
+
+  static _sqlForGetCompanyFilter(filterParams = {}) {
 
     let filters = [];
-    let idx = 0;
+    let where = "WHERE "
+    let whereParams = "";
 
-      const nameSearch = filterParams.nameLike;
-      if(filterParams.nameLike) filterParams.nameLike = `%${nameSearch}%`;
-//TODO: use filters.length instead of index
+    const nameSearch = filterParams.nameLike;
+    if(filterParams.nameLike) filterParams.nameLike = `%${nameSearch}%`;
+
     for (let param in filterParams) {
       if (param === "nameLike") {
-        filters.push(`"name" ILIKE $${idx + 1}`);
+        filters.push(`"name" ILIKE $${filters.length + 1}`);
       }
       else if (param === "minEmployees") {
-        filters.push(`"num_employees" >= $${idx + 1}`);
+        filters.push(`"num_employees" >= $${filters.length + 1}`);
       }
       else if (param === "maxEmployees") {
-        filters.push(`"num_employees" <= $${idx + 1}`);
+        filters.push(`"num_employees" <= $${filters.length + 1}`);
       }
-      idx++;
+    }
+
+    if (filters.length > 0) {
+      whereParams = where.concat(filters.join(" AND "));
     }
 
     return {
-      whereParams: filters.join(" AND "),
+      whereParams: whereParams,
       values: Object.values(filterParams),
     };
   }
