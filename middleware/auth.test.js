@@ -5,8 +5,8 @@ const { UnauthorizedError } = require("../expressError");
 const {
   authenticateJWT,
   ensureLoggedIn,
-  isAdmin,
-  ensureAuthToAccessUser
+  ensureAdmin,
+  ensureAdminOrSpecificUser
 } = require("./auth");
 
 
@@ -72,53 +72,60 @@ describe("ensureLoggedIn", function () {
 });
 
 
-describe("isAdmin", function () {
+describe("ensureAdmin", function () {
   test("works", function () {
     const req = {};
-    const res = { locals: { user: { isAdmin: true } } };
-    isAdmin(req, res, next);
+    const res = { locals: { user: { username: "test", isAdmin: true } } };
+    ensureAdmin(req, res, next);
   });
 
   test("not logged in", function () {
     const req = {};
     const res = { locals: {} };
-    expect(() => isAdmin(req, res, next))
+    expect(() => ensureAdmin(req, res, next))
       .toThrow(UnauthorizedError);
   });
 
   test("unauth if not admin", function () {
     const req = {};
     const res = { locals: { user: { isAdmin: false } } };
-    expect(() => isAdmin(req, res, next))
+    expect(() => ensureAdmin(req, res, next))
       .toThrow(UnauthorizedError);
   });
 });
 
 
-describe("ensureAuthToAccessUser", function () {
+describe("ensureAdminOrSpecificUser", function () {
   test("works if admin", function () {
     const req = {};
-    const res = { locals: { user: { isAdmin: true } } };
-    ensureAuthToAccessUser(req, res, next);
+    const res = { locals: { user: { username: "test", isAdmin: true } } };
+    ensureAdminOrSpecificUser(req, res, next);
   });
 
   test("works if user", function () {
     const req = { params: { username: "test" } };
     const res = { locals: { user: { username: "test" } } };
-    ensureAuthToAccessUser(req, res, next);
+    ensureAdminOrSpecificUser(req, res, next);
   });
 
   test("not logged in", function () {
     const req = { params: { username: "test" } };
     const res = { locals: {} };
-    expect(() => ensureAuthToAccessUser(req, res, next))
+    expect(() => ensureAdminOrSpecificUser(req, res, next))
+      .toThrow(UnauthorizedError);
+  });
+
+  test("not logged in, no url params", function () {
+    const req = { params: {} };
+    const res = { locals: {} };
+    expect(() => ensureAdminOrSpecificUser(req, res, next))
       .toThrow(UnauthorizedError);
   });
 
   test("unauth if not logged in user", function () {
     const req = { params: { username: "test" } };
     const res = { locals: { user: { username: "bob" } } };
-    expect(() => ensureAuthToAccessUser(req, res, next))
+    expect(() => ensureAdminOrSpecificUser(req, res, next))
       .toThrow(UnauthorizedError);
   });
 });

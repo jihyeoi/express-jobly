@@ -44,12 +44,13 @@ function ensureLoggedIn(req, res, next) {
  *
  * If not, raises Unauthorized.
  */
-//TODO: be less helpful with error messages
-//TODO: check for logged in user as well
-//TODO: ensureAdmin for consistency
-function isAdmin(req, res, next) {
-  if (res.locals.user?.isAdmin === true) return next();
-  throw new UnauthorizedError("Must be an admin! ");
+
+function ensureAdmin(req, res, next) {
+  if ((res.locals.user?.username) &&
+      (res.locals.user?.isAdmin === true)) {
+        return next();
+      }
+  throw new UnauthorizedError();
 }
 
 /** Middleware to use when only admin can access
@@ -58,21 +59,19 @@ function isAdmin(req, res, next) {
  * If not, raises Unauthorized.
 */
 
-//TODO: handle empty url param
-//TODO: change name to be more descriptive
-//TODO: again less helpful errors
-function ensureAuthToAccessUser(req, res, next) {
-  if (res.locals.user?.username === req.params?.username ||
-    res.locals.user?.isAdmin === true) {
+function ensureAdminOrSpecificUser(req, res, next) {
+  if ((res.locals.user?.username) &&
+      (res.locals.user?.username === req.params?.username ||
+       res.locals.user?.isAdmin === true)) {
       return next();
     }
 
-  throw new UnauthorizedError("Can only access your own user account!");
+  throw new UnauthorizedError();
 }
 
 module.exports = {
   authenticateJWT,
   ensureLoggedIn,
-  isAdmin,
-  ensureAuthToAccessUser
+  ensureAdmin,
+  ensureAdminOrSpecificUser
 };

@@ -50,8 +50,8 @@ describe("POST /companies", function () {
       company: newCompany,
     });
   });
-//TODO: always describe level of user
-  test("bad request with missing data", async function () {
+
+  test("bad request with missing data for admin", async function () {
     const resp = await request(app)
       .post("/companies")
       .send({
@@ -62,7 +62,7 @@ describe("POST /companies", function () {
     expect(resp.statusCode).toEqual(400);
   });
 
-  test("bad request with invalid data", async function () {
+  test("bad request with invalid data for admin", async function () {
     const resp = await request(app)
       .post("/companies")
       .send({
@@ -259,8 +259,8 @@ describe("PATCH /companies/:handle", function () {
       },
     });
   });
-//TODO: more descriptive than doesn't work
-  test("doens't work if non-admin", async function () {
+
+  test("unauth if non-admin", async function () {
     const resp = await request(app)
       .patch(`/companies/c1`)
       .send({
@@ -278,8 +278,8 @@ describe("PATCH /companies/:handle", function () {
       });
     expect(resp.statusCode).toEqual(401);
   });
-//TODO: unauth for anon no such company
-  test("not found on no such company", async function () {
+
+  test("unauth on no such company", async function () {
     const resp = await request(app)
       .patch(`/companies/nope`)
       .send({
@@ -289,7 +289,7 @@ describe("PATCH /companies/:handle", function () {
     expect(resp.statusCode).toEqual(404);
   });
 
-  test("bad request on handle change attempt", async function () {
+  test("bad request on handle change attempt for admin", async function () {
     const resp = await request(app)
       .patch(`/companies/c1`)
       .send({
@@ -299,7 +299,7 @@ describe("PATCH /companies/:handle", function () {
     expect(resp.statusCode).toEqual(400);
   });
 
-  test("bad request on invalid data", async function () {
+  test("bad request on invalid data for admin ", async function () {
     const resp = await request(app)
       .patch(`/companies/c1`)
       .send({

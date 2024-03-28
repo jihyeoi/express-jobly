@@ -38,8 +38,8 @@ describe("POST /users", function () {
       .set("authorization", `Bearer ${u1Token}`);
     expect(resp.statusCode).toEqual(401);
   });
-//TODO: works for admin
-  test("works for users: create non-admin", async function () {
+
+  test("works for admin: create non-admin", async function () {
     const resp = await request(app)
       .post("/users")
       .send({
@@ -62,8 +62,8 @@ describe("POST /users", function () {
       }, token: expect.any(String),
     });
   });
-//TODO: change name: unauth
-  test("works for users: create admin", async function () {
+
+  test("unauth for users: create admin", async function () {
     const resp = await request(app)
       .post("/users")
       .send({
@@ -116,7 +116,7 @@ describe("POST /users", function () {
     expect(resp.statusCode).toEqual(401);
   });
 
-  test("bad request if missing data", async function () {
+  test("bad request if missing data for admin", async function () {
     const resp = await request(app)
       .post("/users")
       .send({
@@ -126,7 +126,7 @@ describe("POST /users", function () {
     expect(resp.statusCode).toEqual(400);
   });
 
-  test("bad request if invalid data", async function () {
+  test("bad request if invalid data for admin", async function () {
     const resp = await request(app)
       .post("/users")
       .send({
@@ -309,7 +309,7 @@ describe("PATCH /users/:username", () => {
     expect(resp.statusCode).toEqual(401);
   });
 
-  test("not found if no such user", async function () {
+  test("not found if no such user for admin", async function () {
     const resp = await request(app)
       .patch(`/users/nope`)
       .send({
@@ -319,13 +319,33 @@ describe("PATCH /users/:username", () => {
     expect(resp.statusCode).toEqual(404);
   });
 
-  test("bad request if invalid data", async function () {
+  test("unauth if no such user for non-admin", async function () {
+    const resp = await request(app)
+      .patch(`/users/nope`)
+      .send({
+        firstName: "Nope",
+      })
+      .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.statusCode).toEqual(401);
+  });
+
+  test("bad request if invalid data for admin", async function () {
     const resp = await request(app)
       .patch(`/users/u1`)
       .send({
         firstName: 42,
       })
-      .set("authorization", `Bearer ${uAdminToken}`);
+    .set("authorization", `Bearer ${uAdminToken}`);
+    expect(resp.statusCode).toEqual(400);
+  });
+
+  test("unauth if invalid data for non-admin", async function () {
+    const resp = await request(app)
+      .patch(`/users/u1`)
+      .send({
+        firstName: 42,
+      })
+      .set("authorization", `Bearer ${u1Token}`);
     expect(resp.statusCode).toEqual(400);
   });
 
@@ -418,4 +438,3 @@ describe("DELETE /users/:username", function () {
   });
 });
 
-//TODO: if non logged in looking for nonexistent data, gettting 401

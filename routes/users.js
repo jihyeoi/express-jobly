@@ -5,7 +5,7 @@
 const jsonschema = require("jsonschema");
 
 const express = require("express");
-const { ensureLoggedIn, isAdmin, ensureAuthToAccessUser } = require("../middleware/auth");
+const { ensureLoggedIn, ensureAdmin, ensureAdminOrSpecificUser } = require("../middleware/auth");
 const { BadRequestError } = require("../expressError");
 const User = require("../models/user");
 const { createToken } = require("../helpers/tokens");
@@ -27,7 +27,7 @@ const router = express.Router();
  * Authorization required: login & isAdmin
  **/
 
-router.post("/", isAdmin, async function (req, res, next) {
+router.post("/", ensureAdmin, async function (req, res, next) {
   const validator = jsonschema.validate(
       req.body,
       userNewSchema,
@@ -51,7 +51,7 @@ router.post("/", isAdmin, async function (req, res, next) {
  * Authorization required: login
  **/
 
-router.get("/", isAdmin, async function (req, res, next) {
+router.get("/", ensureAdmin, async function (req, res, next) {
   const users = await User.findAll();
   return res.json({ users });
 });
@@ -64,7 +64,7 @@ router.get("/", isAdmin, async function (req, res, next) {
  * Authorization required: specific user or admin
  **/
 
-router.get("/:username", ensureAuthToAccessUser, async function (req, res, next) {
+router.get("/:username", ensureAdminOrSpecificUser, async function (req, res, next) {
   const user = await User.get(req.params.username);
   return res.json({ user });
 });
@@ -80,7 +80,7 @@ router.get("/:username", ensureAuthToAccessUser, async function (req, res, next)
  * Authorization required: specific user or admin
  **/
 
-router.patch("/:username", ensureAuthToAccessUser, async function (req, res, next) {
+router.patch("/:username", ensureAdminOrSpecificUser, async function (req, res, next) {
   const validator = jsonschema.validate(
       req.body,
       userUpdateSchema,
@@ -101,7 +101,7 @@ router.patch("/:username", ensureAuthToAccessUser, async function (req, res, nex
  * Authorization required: specific user or admin
  **/
 
-router.delete("/:username", ensureAuthToAccessUser, async function (req, res, next) {
+router.delete("/:username", ensureAdminOrSpecificUser, async function (req, res, next) {
   await User.remove(req.params.username);
   return res.json({ deleted: req.params.username });
 });
