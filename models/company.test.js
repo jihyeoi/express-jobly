@@ -176,7 +176,7 @@ describe("findFiltered", function () {
   });
 
   test("doesnt work: not found", async function () {
-
+//TODO: refactor to empty array
     try {
       await Company.findAll({minEmployees: 10});
       throw new Error("fail test, you shouldn't get here");
@@ -187,6 +187,7 @@ describe("findFiltered", function () {
   });
 });
 
+//TODO: unit tests for sql builder
 /************************************** update */
 
 describe("update", function () {

@@ -49,13 +49,16 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
  *
  * Authorization required: none
  */
-
+//TODO: more specific error messages
+//TODO: use schema validation
 router.get("/", async function (req, res, next) {
-  console.log("req.query.minEmployees", req.query.minEmployees)
-
-
   if (Number(req.query.minEmployees) > Number(req.query.maxEmployees))
-    throw new BadRequestError();
+    throw new BadRequestError("Invalid filter.");
+
+  for (const param in req.query) {
+    if (!(["minEmployees", "maxEmployees", "nameLike"].includes(param)))
+      throw new BadRequestError("Invalid filter.");
+  }
 
   const companies = await Company.findAll(req.query);
   return res.json({ companies });

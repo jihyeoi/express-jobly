@@ -39,12 +39,12 @@ class Company {
                     description,
                     num_employees AS "numEmployees",
                     logo_url AS "logoUrl"`, [
-          handle,
-          name,
-          description,
-          numEmployees,
-          logoUrl,
-        ],
+      handle,
+      name,
+      description,
+      numEmployees,
+      logoUrl,
+    ],
     );
     const company = result.rows[0];
 
@@ -54,19 +54,21 @@ class Company {
   /** Find all companies.
    *
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
+   *
+   *  * Can filter on provided search filters:
+   * - minEmployees
+   * - maxEmployees
+   * - nameLike (will find case-insensitive, partial matches)
    * */
 
-  static async findAll(filters={}) {
+  static async findAll(filters = {}) {
 
-    const { whereParams, values} = this.sqlForGetCompanyFilter(filters);
+    const { whereParams, values } = this.sqlForGetCompanyFilter(filters);
     let where = "WHERE";
 
     if (Object.keys(filters).length === 0) {
       where = "";
     }
-
-    console.log("whereParams", whereParams);
-    console.log("values", values);
 
     const companiesRes = await db.query(`
         SELECT handle,
@@ -77,16 +79,36 @@ class Company {
         FROM companies
         ${where} ${whereParams}
         ORDER BY name`, [...values]);
-
+//TODO: not an error, just empty array
     if (!companiesRes.rows[0]) throw new NotFoundError("No companies found.");
     return companiesRes.rows;
   }
 
-  static sqlForGetCompanyFilter(filterParams={}) {
+  /** Accepts object with GET companies search parameters, and returns valid
+   *  SQL where statements and values.
+   *
+   * Only accepts parameters of nameLike, minEmployees, maxEmployees.
+   * Returns relevant combination of:
+   *    nameLike => name ILIKE $1
+   *    minEmployees => num_employees >= $2
+   *    maxEmployees => num_employees <= $3
+   *
+   * Accepts {nameLike: "value1", minEmployees: "value2", ...}
+   * Returns {
+   *    whereParams: [name ILIKE $1, num_employees >= $2, ...],
+   *    values: [value1, value2, ]
+   * }
+   */
+//TODO: add underscore to name
+//TODO: add WHERE logic in this function
+  static sqlForGetCompanyFilter(filterParams = {}) {
 
     let filters = [];
     let idx = 0;
 
+      const nameSearch = filterParams.nameLike;
+      if(filterParams.nameLike) filterParams.nameLike = `%${nameSearch}%`;
+//TODO: use filters.length instead of index
     for (let param in filterParams) {
       if (param === "nameLike") {
         filters.push(`"name" ILIKE $${idx + 1}`);
@@ -146,11 +168,11 @@ class Company {
 
   static async update(handle, data) {
     const { setCols, values } = sqlForPartialUpdate(
-        data,
-        {
-          numEmployees: "num_employees",
-          logoUrl: "logo_url",
-        });
+      data,
+      {
+        numEmployees: "num_employees",
+        logoUrl: "logo_url",
+      });
 
     const handleVarIdx = "$" + (values.length + 1);
 
