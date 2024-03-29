@@ -61,12 +61,11 @@ class Job {
    * - hasEquity (true/false)
    * */
 
-  //TODO: FINISH THIS!
-  //TODO: make schema
-
   static async findAll(filters = {}) {
 
-   // const { whereParams, values } = this._sqlForGetCompanyFilter(filters);
+   const { whereParams, values } = this._sqlForJobFilter(filters);
+
+   console.log("WHEREPARAMS: ", whereParams);
 
     const jobsRes = await db.query(`
         SELECT id,
@@ -75,7 +74,8 @@ class Job {
                equity,
                company_handle AS "companyHandle"
         FROM jobs
-        ORDER BY title`, );
+        ${whereParams}
+        ORDER BY title`, [...values]);
 
     return jobsRes.rows;
   }
@@ -96,36 +96,44 @@ class Job {
    * }
    */
 
-  // static _sqlForGetCompanyFilter(filterParams = {}) {
+  static _sqlForJobFilter(filterParams = {}) {
 
-  //   let filters = [];
-  //   let where = "WHERE "
-  //   let whereParams = "";
+    let filters = [];
+    let where = "WHERE "
+    let whereParams = "";
+    let idx = 1;
 
-  //   const nameSearch = filterParams.nameLike;
-  //   if(filterParams.nameLike) filterParams.nameLike = `%${nameSearch}%`;
+    const titleSearch = filterParams.title;
+    if(filterParams.title) filterParams.title = `%${titleSearch}%`;
 
-  //   for (let param in filterParams) {
-  //     if (param === "nameLike") {
-  //       filters.push(`"name" ILIKE $${filters.length + 1}`);
-  //     }
-  //     else if (param === "minEmployees") {
-  //       filters.push(`"num_employees" >= $${filters.length + 1}`);
-  //     }
-  //     else if (param === "maxEmployees") {
-  //       filters.push(`"num_employees" <= $${filters.length + 1}`);
-  //     }
-  //   }
+    for (let param in filterParams) {
+      if (param === "title") {
+        filters.push(`"title" ILIKE $${idx}`);
+      }
+      else if (param === "minSalary") {
+        filters.push(`"salary" >= $${idx}`);
+      }
+      else if (param === "hasEquity" && filterParams.hasEquity === "true") {
+        filters.push(`"equity" <> 0`);
+        delete filterParams.hasEquity;
+        idx--;
+      }
 
-  //   if (filters.length > 0) {
-  //     whereParams = where.concat(filters.join(" AND "));
-  //   }
+      idx++;
+    }
 
-  //   return {
-  //     whereParams: whereParams,
-  //     values: Object.values(filterParams),
-  //   };
-  // }
+    if (filters.length > 0) {
+      whereParams = where.concat(filters.join(" AND "));
+    }
+
+    console.log("filters: ", filters)
+    console.log("filterParams: ", filterParams);
+
+    return {
+      whereParams: whereParams,
+      values: Object.values(filterParams),
+    };
+  }
 
 
   /** Given an id, return data about job.

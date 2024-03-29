@@ -132,100 +132,115 @@ describe("GET /jobs", function () {
     });
   });
 
-//   test("ok for nameLike filter", async function () {
-//     const resp = await request(app).get("/jobs/?nameLike=c1");
-//     expect(resp.statusCode).toEqual(200);
-//     expect(resp.body).toEqual({
-//       jobs:
-//         [
-//           {
-//             handle: "c1",
-//             name: "C1",
-//             description: "Desc1",
-//             numEmployees: 1,
-//             logoUrl: "http://c1.img",
-//           }
-//         ]
-//     });
-//   });
+  test("ok for title filter", async function () {
+    const resp = (await request(app).get("/jobs").query({title:"J1"}));
+    expect(resp.statusCode).toEqual(200);
+    console.log("resp.body: ", resp.body)
+    expect(resp.body).toEqual({
+      jobs:
+        [
+          {
+            id: 1,
+            title: "J1",
+            salary: 100,
+            equity: "0",
+            companyHandle: "c1",
+          }
+        ]
+    });
+  });
 
-//   test("ok for minEmployees filter", async function () {
-//     const resp = await request(app).get("/jobs/?minEmployees=3");
-//     expect(resp.statusCode).toEqual(200);
-//     expect(resp.body).toEqual({
-//       jobs:
-//         [
-//           {
-//             handle: "c3",
-//             name: "C3",
-//             description: "Desc3",
-//             numEmployees: 3,
-//             logoUrl: "http://c3.img",
-//           }
-//         ]
-//     });
-//   });
+  test("ok for minSalary filter", async function () {
+    const resp = await request(app).get("/jobs").query({minSalary:200});
+    expect(resp.statusCode).toEqual(200);
+    expect(resp.body).toEqual({
+      jobs:
+        [
+          {
+            id: 2,
+            title: "J2",
+            salary: 200,
+            equity: "0.050",
+            companyHandle: "c2"
+          },
+          {
+            id: 3,
+            title: "J3",
+            salary: 300,
+            equity: "0.005",
+            companyHandle: "c3"
+          }
+        ]
+    });
+  });
 
-//   test("ok for maxEmployees filter", async function () {
-//     const resp = await request(app).get("/jobs/?maxEmployees=1");
-//     expect(resp.statusCode).toEqual(200);
-//     expect(resp.body).toEqual({
-//       jobs:
-//         [
-//           {
-//             handle: "c1",
-//             name: "C1",
-//             description: "Desc1",
-//             numEmployees: 1,
-//             logoUrl: "http://c1.img",
-//           }
-//         ]
-//     });
-//   });
+  test("ok for equities = true filter", async function () {
+    const resp = await request(app).get("/jobs").query({hasEquity:"true"});
+    expect(resp.statusCode).toEqual(200);
+    expect(resp.body).toEqual({
+      jobs:
+        [
+          {
+            id: 2,
+            title: "J2",
+            salary: 200,
+            equity: "0.050",
+            companyHandle: "c2"
+          },
+          {
+            id: 3,
+            title: "J3",
+            salary: 300,
+            equity: "0.005",
+            companyHandle: "c3"
+          }
+        ]
+    });
+  });
 
-//   test("fail for non-integer numEmployees", async function () {
-//     const resp = await request(app).get("/jobs/?minEmployees=3.5");
-//     expect(resp.statusCode).toEqual(400);
-//   });
+  test("fail for non-integer minSalary", async function () {
+    const resp = await request(app).get("/jobs").query({minSalary:3.5});
+    expect(resp.statusCode).toEqual(400);
+  });
 
-//   test("ok for minEmloyees & maxEmployees filter", async function () {
-//     const resp = await request(app).get("/jobs/?minEmployees=1&maxEmployees=2");
-//     expect(resp.statusCode).toEqual(200);
-//     expect(resp.body).toEqual({
-//       jobs:
-//         [
-//           {
-//             handle: "c1",
-//             name: "C1",
-//             description: "Desc1",
-//             numEmployees: 1,
-//             logoUrl: "http://c1.img",
-//           },
-//           {
-//             handle: "c2",
-//             name: "C2",
-//             description: "Desc2",
-//             numEmployees: 2,
-//             logoUrl: "http://c2.img",
-//           }
-//         ]
-//     });
-//   });
+  test("ok for hasEquity & minSalary filter", async function () {
+    const resp = await request(app).get("/jobs").query({hasEquity:"true", minSalary:200});
+    expect(resp.statusCode).toEqual(200);
+    expect(resp.body).toEqual({
+      jobs:
+        [
+          {
+            id: 2,
+            title: "J2",
+            salary: 200,
+            equity: "0.050",
+            companyHandle: "c2"
+          },
+          {
+            id: 3,
+            title: "J3",
+            salary: 300,
+            equity: "0.005",
+            companyHandle: "c3"
+          }
+        ]
+    });
+  });
 
-//   test("not ok for minEmloyees & maxEmployees filter", async function () {
-//     const resp = await request(app).get("/jobs/?minEmployees=2&maxEmployees=1");
-//     expect(resp.statusCode).toEqual(400);
-//   });
+  test("not ok for minSalary < 0 filter", async function () {
+    const resp = await request(app).get("/jobs").query({minSalary:-2});
+    expect(resp.statusCode).toEqual(400);
+  });
 
-//   test("no search results yields empty array", async function () {
-//     const resp = await request(app).get("/jobs/?nameLike=poppyseed");
-//     expect(resp.body).toEqual({ jobs: [] });
-//   });
+  test("no search results yields empty array", async function () {
+    const resp = await request(app).get("/jobs").query({title:"poppyseed"});
+    expect(resp.body).toEqual({ jobs: [] });
+  });
 
-//   test("not ok for query parameter 'apple = 1'", async function () {
-//     const resp = await request(app).get("/jobs/?apple=1");
-//     expect(resp.statusCode).toEqual(400);
-//   });
+  test("not ok for invalid query parameter 'apple = 1'", async function () {
+    const resp = await request(app).get("/jobs").query({apple:1});
+    expect(resp.statusCode).toEqual(400);
+  });
 
 });
 
@@ -258,74 +273,74 @@ describe("GET /jobs/:id", function () {
 
 // /************************************** PATCH /jobs/:id */
 
-// describe("PATCH /jobs/:handle", function () {
-//   test("works for admin", async function () {
-//     const resp = await request(app)
-//       .patch(`/jobs/c1`)
-//       .send({
-//         name: "C1-new",
-//       })
-//       .set("authorization", `Bearer ${uAdminToken}`);
-//     expect(resp.body).toEqual({
-//       company: {
-//         handle: "c1",
-//         name: "C1-new",
-//         description: "Desc1",
-//         numEmployees: 1,
-//         logoUrl: "http://c1.img",
-//       },
-//     });
-//   });
+describe("PATCH /jobs/:handle", function () {
+  test("works for admin", async function () {
+    const resp = await request(app)
+      .patch(`/jobs/1`)
+      .send({
+        title: "New",
+      })
+      .set("authorization", `Bearer ${uAdminToken}`);
+    expect(resp.body).toEqual({
+      job: {
+        id: 1,
+        title: "New",
+        salary: 100,
+        equity: "0",
+        companyHandle: "c1"
+      },
+    });
+  });
 
-//   test("unauth if non-admin", async function () {
-//     const resp = await request(app)
-//       .patch(`/jobs/c1`)
-//       .send({
-//         name: "C1-new",
-//       })
-//       .set("authorization", `Bearer ${u1Token}`);
-//       expect(resp.statusCode).toEqual(401)
-//   });
+  test("unauth if non-admin", async function () {
+    const resp = await request(app)
+      .patch(`/jobs/1`)
+      .send({
+        name: "C1-new",
+      })
+      .set("authorization", `Bearer ${u1Token}`);
+      expect(resp.statusCode).toEqual(401)
+  });
 
-//   test("unauth for anon", async function () {
-//     const resp = await request(app)
-//       .patch(`/jobs/c1`)
-//       .send({
-//         name: "C1-new",
-//       });
-//     expect(resp.statusCode).toEqual(401);
-//   });
+  test("unauth for anon", async function () {
+    const resp = await request(app)
+      .patch(`/jobs/c1`)
+      .send({
+        name: "C1-new",
+      });
+    expect(resp.statusCode).toEqual(401);
+  });
 
-//   test("unauth on no such company", async function () {
-//     const resp = await request(app)
-//       .patch(`/jobs/nope`)
-//       .send({
-//         name: "new nope",
-//       })
-//       .set("authorization", `Bearer ${uAdminToken}`);
-//     expect(resp.statusCode).toEqual(404);
-//   });
+  test("unauth on no such job", async function () {
+    const resp = await request(app)
+      .patch(`/jobs/nope`)
+      .send({
+        name: "new nope",
+      })
+      .set("authorization", `Bearer ${uAdminToken}`);
+    expect(resp.statusCode).toEqual(400);
+  });
 
-//   test("bad request on handle change attempt for admin", async function () {
-//     const resp = await request(app)
-//       .patch(`/jobs/c1`)
-//       .send({
-//         handle: "c1-new",
-//       })
-//       .set("authorization", `Bearer ${uAdminToken}`);
-//     expect(resp.statusCode).toEqual(400);
-//   });
+  test("bad request on handle change attempt for admin", async function () {
+    const resp = await request(app)
+      .patch(`/jobs/1`)
+      .send({
+        handle: "c1-new",
+      })
+      .set("authorization", `Bearer ${uAdminToken}`);
+    expect(resp.statusCode).toEqual(400);
+  });
 
-//   test("bad request on invalid data for admin ", async function () {
-//     const resp = await request(app)
-//       .patch(`/jobs/c1`)
-//       .send({
-//         logoUrl: "not-a-url",
-//       })
-//       .set("authorization", `Bearer ${uAdminToken}`);
-//     expect(resp.statusCode).toEqual(400);
-//   });
-// });
+  test("bad request on invalid data for admin ", async function () {
+    const resp = await request(app)
+      .patch(`/jobs/1`)
+      .send({
+        logoUrl: "not-a-url",
+      })
+      .set("authorization", `Bearer ${uAdminToken}`);
+    expect(resp.statusCode).toEqual(400);
+  });
+});
 
 // /************************************** DELETE /jobs/:id */
 

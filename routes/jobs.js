@@ -14,6 +14,8 @@ const companyNewSchema = require("../schemas/companyNew.json");
 const companyUpdateSchema = require("../schemas/companyUpdate.json");
 const companyFiltersSchema = require("../schemas/companyFilters.json");
 const jobNewSchema = require("../schemas/jobNew.json");
+const jobUpdateSchema = require("../schemas/jobsUpdate.json");
+const jobFilterSchema = require("../schemas/jobFilters.json");
 
 const router = new express.Router();
 
@@ -46,33 +48,30 @@ router.post("/", ensureAdmin, async function (req, res, next) {
  *   { jobs: [ { id, title, salary, equity, companyHandle }, ...] }
  *
  * Can filter on provided search filters:
- * - minEmployees
- * - maxEmployees
- * - nameLike (will find case-insensitive, partial matches)
+ * - title (will find case-insensitive, partial matches)
+ * - minSalary
+ * - hasEquity (true/false)
  *
  * Authorization required: none
  */
 
 router.get("/", async function (req, res, next) {
+  const query = req.query;
 
-  // must make a copy of req.query to convert between types
-  // const query = Number(req.query.id);
+  if (query.minSalary !== undefined) query.minSalary = +query.minSalary;
 
-  // if (query.minEmployees !== undefined) query.minEmployees = +query.minEmployees
-  // if (query.maxEmployees !== undefined) query.maxEmployees = +query.maxEmployees
+  const validator = jsonschema.validate(
+    query,
+    jobFilterSchema,
+    { required: true }
+  );
 
-  // const validator = jsonschema.validate(
-  //   query,
-  //   companyFiltersSchema,
-  //   { required: true }
-  // );
+  if (!validator.valid) {
+    const errs = validator.errors.map(e => e.stack);
+    throw new BadRequestError(errs);
+  }
 
-  // if (!validator.valid) {
-  //   const errs = validator.errors.map(e => e.stack);
-  //   throw new BadRequestError(errs);
-  // }
-
-  const jobs = await Job.findAll();
+  const jobs = await Job.findAll(query);
   return res.json({ jobs });
 });
 
@@ -93,11 +92,11 @@ router.get("/:id", async function (req, res, next) {
 
 /** PATCH /[handle] { fld1, fld2, ... } => { company }
  *
- * Patches company data.
+ * Patches job data.
  *
- * fields can be: { name, description, numEmployees, logo_url }
+ * fields can be: { title, salary, equity }
  *
- * Returns { handle, name, description, numEmployees, logo_url }
+ * Returns { id, title, salary, equity, companyHandle }
  *
  * Authorization required: login & isAdmin
  */
@@ -105,7 +104,7 @@ router.get("/:id", async function (req, res, next) {
 router.patch("/:id", ensureAdmin, async function (req, res, next) {
   const validator = jsonschema.validate(
     req.body,
-    companyUpdateSchema,
+    jobUpdateSchema,
     { required: true }
   );
   if (!validator.valid) {
@@ -113,8 +112,8 @@ router.patch("/:id", ensureAdmin, async function (req, res, next) {
     throw new BadRequestError(errs);
   }
 
-  const company = await Company.update(req.params.handle, req.body);
-  return res.json({ company });
+  const job = await Job.update(req.params.id, req.body);
+  return res.json({ job });
 });
 
 /** DELETE /[handle]  =>  { deleted: handle }
