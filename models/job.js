@@ -14,10 +14,20 @@ class Job {
    *
    * Returns { id, title, salary, equity, company_handle }
    *
-   * Throws BadRequestError if job is already in database.
+   * Throws BadRequestError if companyHandle is not in database.
    * */
 
   static async create({ title, salary, equity, companyHandle }) {
+
+    const companyResult = await db.query(`
+                SELECT handle
+                FROM companies
+                WHERE handle = $1`, [companyHandle]
+    );
+
+    const company = companyResult.rows[0];
+
+    if (!company) throw new NotFoundError("CompanyHandle does not exist!");
 
     const result = await db.query(`
                 INSERT INTO jobs (title,
@@ -26,6 +36,7 @@ class Job {
                                   company_handle)
                 VALUES ($1, $2, $3, $4)
                 RETURNING
+                    id,
                     title,
                     salary,
                     equity,
@@ -33,7 +44,7 @@ class Job {
       title,
       salary,
       equity,
-      companyHandle],
+      companyHandle]
     );
     const job = result.rows[0];
 
@@ -58,14 +69,13 @@ class Job {
    // const { whereParams, values } = this._sqlForGetCompanyFilter(filters);
 
     const jobsRes = await db.query(`
-        SELECT handle,
-               name,
-               description,
-               num_employees AS "numEmployees",
-               logo_url      AS "logoUrl"
-        FROM companies
-
-        ORDER BY name`, );
+        SELECT id,
+               title,
+               salary,
+               equity,
+               company_handle AS "companyHandle"
+        FROM jobs
+        ORDER BY title`, );
 
     return jobsRes.rows;
   }
@@ -127,18 +137,19 @@ class Job {
 
   static async get(id) {
     const jobRes = await db.query(`
-        SELECT title,
+        SELECT id,
+               title,
                salary,
                equity,
-               company_handle AS "companyHandle",
+               company_handle AS "companyHandle"
         FROM jobs
         WHERE id = $1`, [id]);
 
-    const company = jobRes.rows[0];
+    const job = jobRes.rows[0];
 
-    if (!company) throw new NotFoundError(`No job: ${id}`);
+    if (!job) throw new NotFoundError(`No job: ${id}`);
 
-    return company;
+    return job;
   }
 
   /** Update job data with `data`.
@@ -163,6 +174,7 @@ class Job {
         SET ${setCols}
         WHERE id = ${idVarIdx}
         RETURNING
+            id,
             title,
             salary,
             equity,
@@ -184,9 +196,10 @@ class Job {
   static async remove(id) {
     const result = await db.query(`
         DELETE
-        FROM id
+        FROM jobs
         WHERE id = $1
         RETURNING id`, [id]);
+
     const job = result.rows[0];
 
     if (!job) throw new NotFoundError(`No job: ${id}`);
